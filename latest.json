@@ -1,6 +1,6 @@
 {
-  "version": "4.3.1",
-  "release": "16",
+  "version": "4.3.2",
+  "release": "17",
   "file_name": "15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar.zip",
   "package_parts": [
     "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-001.b64",
@@ -16,8 +16,16 @@
     "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-011.b64"
   ],
   "sha256": "ff6903a75e4697df61195f519e90546b14b352e0b618ed6e57a3ba2a37b8e0e6",
-  "published_at": "2026-07-29T08:52:00+02:00",
+  "repair_source_parts": [
+    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/repairs/v4.3.2/vertical_predictive_letter_wheel.py.gz.b64.part-001",
+    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/repairs/v4.3.2/vertical_predictive_letter_wheel.py.gz.b64.part-002",
+    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/repairs/v4.3.2/vertical_predictive_letter_wheel.py.gz.b64.part-003",
+    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/repairs/v4.3.2/vertical_predictive_letter_wheel.py.gz.b64.part-004"
+  ],
+  "repair_source_sha256": "0f0a1b1f253911bef920ba7f05a8b7a55292b0a8409a40668695fe8ec2f7b88c",
+  "published_at": "2026-07-29T19:40:00+02:00",
   "channel": "stable",
   "part_count": 11,
-  "note": "SHA updated to the hash actually produced by the installer reconstruction path."
+  "repair_part_count": 4,
+  "note": "The legacy package is reconstructed and verified, then the complete clean Python source is restored from a separately verified repair payload and validated with py_compile before installation."
 }
