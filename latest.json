@@ -15,9 +15,9 @@
     "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-010.b64",
     "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-011.b64"
   ],
-  "sha256": "827a0340314a3419c10796761f39c89549c9862b5616a6bfa0409051d03d3fbd",
+  "sha256": "ff6903a75e4697df61195f519e90546b14b352e0b618ed6e57a3ba2a37b8e0e6",
   "published_at": "2026-07-29T08:52:00+02:00",
   "channel": "stable",
   "part_count": 11,
-  "note": "Temporary fallback to valid multipart package. Direct ZIP for release 16 was corrupted (15 KB, invalid central directory)."
+  "note": "SHA updated to the hash actually produced by the installer reconstruction path."
 }
