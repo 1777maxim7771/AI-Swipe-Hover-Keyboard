@@ -1,12 +1,22 @@
 # Changelog
 
+## 4.3.2 installer path hotfix — 2026-07-29 23:27
+
+- Fixed installer failure after clean-source SHA-256 verification.
+- Root cause: `python -m py_compile` attempted to create a temporary `.pyc` file inside a path longer than the classic Windows MAX_PATH limit.
+- The failing path was about 275 characters long and ended in `PROGRAM_FILES\__pycache__\vertical_predictive_letter_wheel.cpython-314.pyc.<temporary-id>`.
+- The installer now uses a short temporary directory such as `%TEMP%\ASHK_ab12cd34`.
+- Python syntax is validated in memory with `compile(...)`, so no `__pycache__` or `.pyc` files are created.
+- All Python source files are validated, not only the repaired main module.
+- Stale `__pycache__` directories and `.pyc` files are removed before installation.
+
 ## 4.3.2 — 2026-07-29
 
 - Fixed startup failure `SyntaxError: unterminated string literal` in `vertical_predictive_letter_wheel.py` at line 1419.
 - Root cause: the legacy reconstructed package contained a damaged/truncated Python source file even though the package-level SHA matched the published legacy package.
 - Added a separate clean-source repair payload split into four verified Base64/GZip parts.
 - Installer now restores the complete Python source after package extraction.
-- The restored source is checked with its own SHA-256 value and then compiled with `python -m py_compile` before any program files are installed.
+- The restored source is checked with its own SHA-256 value and then syntax-validated before any program files are installed.
 - Updater now compares both application version and main-source SHA-256; it repairs a damaged installation even when version numbers appear current.
 - Added root `UPDATE_FROM_GITHUB.ps1` and `UPDATE_AND_START.bat` so installed copies always fetch the current repair logic.
 
