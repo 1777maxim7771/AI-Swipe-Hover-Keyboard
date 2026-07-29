@@ -10,5 +10,8 @@ Changes:
 - Local API key and user data are preserved during update.
 - Custom title bar and no-upper-gloss ring buttons remain unchanged.
 
-Hotfix (2026-07-29 evening):
-- Corrected SHA-256 in latest.json so verification matches the uploaded ZIP.
+Hotfixes (2026-07-29 evening):
+- Corrected SHA-256 in latest.json.
+- The originally published direct ZIP was corrupted (invalid central directory).
+- latest.json temporarily uses the known-good package_parts from release 15
+  so installation works again. A clean direct ZIP will be republished later.
