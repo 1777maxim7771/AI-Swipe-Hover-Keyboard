@@ -1,0 +1,11 @@
+AI Swipe Hover Keyboard
+Version: 4.3.1
+Release: 16
+Date: 2026-07-29
+Time: 08:52 +02:00
+Topic: direct GitHub update hotfix
+
+Changes:
+- GitHub updater prefers a direct verified ZIP download_url.
+- Local API key and user data are preserved during update.
+- Custom title bar and no-upper-gloss ring buttons remain unchanged.

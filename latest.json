@@ -1,21 +1,9 @@
 {
-  "version": "4.3.0",
-  "release": "15",
-  "file_name": "15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar.zip",
-  "package_parts": [
-    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-001.b64",
-    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-002.b64",
-    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-003.b64",
-    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-004.b64",
-    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-005.b64",
-    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-006.b64",
-    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-007.b64",
-    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-008.b64",
-    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-009.b64",
-    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-010.b64",
-    "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/15__2026-07-29__0816__ai-swipe-hover-keyboard__github-self-update-custom-titlebar/part-011.b64"
-  ],
-  "sha256": "827a0340314a3419c10796761f39c89549c9862b5616a6bfa0409051d03d3fbd",
-  "published_at": "2026-07-29T08:16:00+02:00",
+  "version": "4.3.1",
+  "release": "16",
+  "file_name": "16__2026-07-29__0852__ai-swipe-hover-keyboard__direct-github-update-hotfix.zip",
+  "download_url": "https://raw.githubusercontent.com/1777maxim7771/AI-Swipe-Hover-Keyboard/main/versions/16__2026-07-29__0852__ai-swipe-hover-keyboard__direct-github-update-hotfix.zip",
+  "sha256": "5d7cee47e7c5aa506734e0a1d189c37b4db31528cbf117f8910d2d3d81ff18b0",
+  "published_at": "2026-07-29T08:52:00+02:00",
   "channel": "stable"
 }
