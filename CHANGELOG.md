@@ -1,5 +1,13 @@
 # Changelog
 
+## Installer hotfix — 2026-07-29
+
+- Fixed `latest.json does not contain package_parts` in old local installers.
+- The BAT now downloads the newest PowerShell installer before checking the manifest.
+- The PowerShell installer accepts `download_url`, `package_url`, and legacy `package_parts`.
+- Added cache-busting, retry logic, expected/actual SHA-256 logging, configuration preservation, and rollback protection.
+- The application package remains version 4.3.1; this entry updates the installation mechanism.
+
 ## 4.3.1 — 2026-07-29
 
 - Published a direct GitHub ZIP package with SHA-256 verification.
