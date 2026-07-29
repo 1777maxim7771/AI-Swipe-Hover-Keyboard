@@ -9,13 +9,14 @@ $ProgressPreference = "SilentlyContinue"
 $RepoOwner = "1777maxim7771"
 $RepoName = "AI-Swipe-Hover-Keyboard"
 $Branch = "main"
-$UserAgent = "AI-Swipe-Hover-Keyboard-Installer/4.3.2"
+$UserAgent = "AI-Swipe-Hover-Keyboard-Installer/4.3.2-path-hotfix"
 $LogFile = Join-Path $PSScriptRoot "INSTALL_LOG.txt"
-$tempRoot = Join-Path $env:TEMP ("AI_Swipe_Hover_Keyboard_Install_" + [guid]::NewGuid().ToString("N"))
-$zipPath = Join-Path $tempRoot "latest.zip"
-$extractDir = Join-Path $tempRoot "extract"
-$backupDir = Join-Path $tempRoot "backup"
-$preserveDir = Join-Path $tempRoot "preserve"
+$shortId = [guid]::NewGuid().ToString("N").Substring(0, 8)
+$tempRoot = Join-Path $env:TEMP ("ASHK_" + $shortId)
+$zipPath = Join-Path $tempRoot "p.zip"
+$extractDir = Join-Path $tempRoot "x"
+$backupDir = Join-Path $tempRoot "b"
+$preserveDir = Join-Path $tempRoot "p"
 $installationChanged = $false
 
 function Write-InstallLog {
@@ -136,6 +137,38 @@ function Find-PythonOnC {
     return $null
 }
 
+function Test-PythonSourcesWithoutPyc {
+    param([string]$PythonExe, [string]$SourceRoot)
+    $validator = @'
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+files = sorted(root.rglob("*.py"))
+if not files:
+    raise SystemExit("No Python source files were found for validation.")
+for path in files:
+    source = path.read_text(encoding="utf-8-sig")
+    compile(source, str(path), "exec")
+    print(f"SYNTAX OK: {path.relative_to(root)}")
+'@
+    & $PythonExe -c $validator $SourceRoot
+    if ($LASTEXITCODE -ne 0) {
+        throw "Python source syntax validation failed."
+    }
+    Write-InstallLog "All Python sources passed in-memory syntax validation without creating __pycache__."
+}
+
+function Remove-PythonCacheArtifacts {
+    param([string]$SourceRoot)
+    Get-ChildItem -LiteralPath $SourceRoot -Recurse -Directory -Filter "__pycache__" -ErrorAction SilentlyContinue | ForEach-Object {
+        Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    Get-ChildItem -LiteralPath $SourceRoot -Recurse -File -Filter "*.pyc" -ErrorAction SilentlyContinue | ForEach-Object {
+        Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Apply-SourceRepairFromManifest {
     param($Manifest, [string]$SourceRoot)
     $partsProperty = $Manifest.PSObject.Properties["repair_source_parts"]
@@ -174,20 +207,21 @@ function Apply-SourceRepairFromManifest {
 
     $python = Find-PythonOnC
     if (-not $python) { throw "Python не найден на диске C. Установите Python 3.11 или новее и повторите запуск." }
-    & $python -m py_compile $target
-    if ($LASTEXITCODE -ne 0) { throw "Repaired Python source failed py_compile validation." }
-    Write-InstallLog "Clean source repair passed py_compile."
+    Remove-PythonCacheArtifacts -SourceRoot $SourceRoot
+    Test-PythonSourcesWithoutPyc -PythonExe $python -SourceRoot $SourceRoot
 
     $versionText = @"
 AI Swipe Hover Keyboard
 Version: $($Manifest.version)
 Release: $($Manifest.release)
 Date: 2026-07-29
-Topic: clean source recovery and syntax validation
+Topic: clean source recovery and long-path-safe syntax validation
 
 Changes:
 - Restored the complete vertical_predictive_letter_wheel.py from a verified repair payload.
-- Added mandatory SHA-256 and py_compile validation before installation.
+- Added mandatory SHA-256 validation before installation.
+- Validates all Python sources in memory without creating __pycache__ or .pyc files.
+- Uses short temporary paths to avoid Windows MAX_PATH failures.
 - Added manifest schema compatibility and rollback protection.
 "@
     Set-Content -LiteralPath (Join-Path $SourceRoot "VERSION_INFO.txt") -Value $versionText -Encoding UTF8
@@ -206,6 +240,7 @@ function Install-LatestRuntimeFiles {
 try {
     New-Item -ItemType Directory -Path $tempRoot, $extractDir, $backupDir, $preserveDir -Force | Out-Null
     Write-InstallLog "Checking the latest version on GitHub..."
+    Write-InstallLog ("Using short temporary directory: {0}" -f $tempRoot)
     $manifestUrl = "https://raw.githubusercontent.com/$RepoOwner/$RepoName/$Branch/latest.json"
     $manifest = Invoke-JsonWithRetry -Url $manifestUrl
     if (-not $manifest.version) { throw "latest.json does not contain version." }
