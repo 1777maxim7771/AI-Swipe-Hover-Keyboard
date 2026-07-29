@@ -16,9 +16,11 @@ The BAT first downloads the newest installer logic from GitHub. The installer th
 2. downloads and verifies the published package;
 3. restores the complete clean `vertical_predictive_letter_wheel.py` from a separately verified repair payload;
 4. verifies the restored source SHA-256;
-5. runs `python -m py_compile` before copying files into the installation directory;
+5. validates every Python source in memory with `compile(...)` before copying files into the installation directory;
 6. preserves the local API key, settings, window position, learning data, language statistics, and logs;
 7. installs the current updater and starts the application.
+
+The installer deliberately does not use `python -m py_compile` inside the deeply nested extraction folder. On Windows that command creates a temporary `.pyc` path under `__pycache__`; long release-folder names can exceed the classic MAX_PATH limit. The current installer uses a short `%TEMP%\ASHK_xxxxxxxx` directory and validates syntax without creating `.pyc` files.
 
 The installer supports all known package fields:
 
