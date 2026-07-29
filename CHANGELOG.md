@@ -1,10 +1,17 @@
 # Changelog
 
+## Package integrity fix — 2026-07-29 (evening)
+
+- The direct ZIP published for release 16 was corrupted (only ~15 KB, missing valid ZIP central directory).
+- This caused `Expand-Archive` / `.ctor` error: "Не удается найти конец записи центрального каталога".
+- Temporarily restored a working package by pointing `latest.json` to the known-good `package_parts` of release 15.
+- Installer already supports the multipart Base64 fallback path, so installation works again.
+- A clean direct ZIP for 4.3.1 will be republished later.
+
 ## SHA-256 correction — 2026-07-29
 
 - Corrected the `sha256` value in `latest.json` for release 16.
-- Previous hash did not match the actual content of `16__2026-07-29__0852__ai-swipe-hover-keyboard__direct-github-update-hotfix.zip`.
-- This fixed the client-side error: `INSTALL ERROR: SHA-256 verification failed`.
+- Previous hash did not match the actual content of the (later discovered corrupted) ZIP.
 
 ## Installer hotfix — 2026-07-29
 
