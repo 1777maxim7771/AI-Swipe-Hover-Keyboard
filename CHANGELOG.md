@@ -1,5 +1,11 @@
 # Changelog
 
+## SHA-256 correction — 2026-07-29
+
+- Corrected the `sha256` value in `latest.json` for release 16.
+- Previous hash did not match the actual content of `16__2026-07-29__0852__ai-swipe-hover-keyboard__direct-github-update-hotfix.zip`.
+- This fixed the client-side error: `INSTALL ERROR: SHA-256 verification failed`.
+
 ## Installer hotfix — 2026-07-29
 
 - Fixed `latest.json does not contain package_parts` in old local installers.
