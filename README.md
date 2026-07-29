@@ -1,8 +1,8 @@
 # AI Swipe Hover Keyboard
 
-Current stable application version: **4.3.1**.
+Current stable application version: **4.3.2**.
 
-## First installation
+## First installation or repair
 
 Download the repository and run:
 
@@ -10,17 +10,26 @@ Download the repository and run:
 INSTALL_LATEST_FROM_GITHUB.bat
 ```
 
-The BAT now downloads the newest installer logic from GitHub before reading `latest.json`. This prevents an old local PowerShell installer from failing when the manifest format changes.
+The BAT first downloads the newest installer logic from GitHub. The installer then:
+
+1. reads `latest.json`;
+2. downloads and verifies the published package;
+3. restores the complete clean `vertical_predictive_letter_wheel.py` from a separately verified repair payload;
+4. verifies the restored source SHA-256;
+5. runs `python -m py_compile` before copying files into the installation directory;
+6. preserves the local API key, settings, window position, learning data, language statistics, and logs;
+7. installs the current updater and starts the application.
 
 The installer supports all known package fields:
 
-- `download_url` — current direct ZIP format;
+- `download_url` — direct ZIP;
 - `package_url` — previous direct ZIP alias;
-- `package_parts` — legacy multipart Base64 format.
+- `package_parts` — multipart Base64 package;
+- `repair_source_parts` — separately verified clean-source recovery payload.
 
 Installation and update logs are written to `INSTALL_LOG.txt` and `UPDATE_LOG.txt`.
 
-## Normal start with update check
+## Normal start with update and integrity check
 
 After installation, start the program through:
 
@@ -28,7 +37,7 @@ After installation, start the program through:
 UPDATE_AND_START.bat
 ```
 
-The updater checks `latest.json` on GitHub before every start. When a newer version exists, it downloads the ZIP, verifies SHA-256, preserves the local API key and user data, installs the update, and starts the program. When GitHub is unavailable, the currently installed version starts.
+The updater checks both the version and the SHA-256 of the main Python source. A source repair is triggered even when the version number appears current but the installed source is damaged.
 
 ## Current interface
 
