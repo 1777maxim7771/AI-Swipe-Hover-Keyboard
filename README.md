@@ -1,6 +1,6 @@
 # AI Swipe Hover Keyboard
 
-Current stable version: **4.3.1**.
+Current stable application version: **4.3.1**.
 
 ## First installation
 
@@ -10,6 +10,16 @@ Download the repository and run:
 INSTALL_LATEST_FROM_GITHUB.bat
 ```
 
+The BAT now downloads the newest installer logic from GitHub before reading `latest.json`. This prevents an old local PowerShell installer from failing when the manifest format changes.
+
+The installer supports all known package fields:
+
+- `download_url` — current direct ZIP format;
+- `package_url` — previous direct ZIP alias;
+- `package_parts` — legacy multipart Base64 format.
+
+Installation and update logs are written to `INSTALL_LOG.txt` and `UPDATE_LOG.txt`.
+
 ## Normal start with update check
 
 After installation, start the program through:
@@ -18,7 +28,7 @@ After installation, start the program through:
 UPDATE_AND_START.bat
 ```
 
-The BAT checks `latest.json` on GitHub before every start. When a newer version exists, the updater downloads the ZIP, verifies SHA-256, preserves the local API key and user data, installs the update, and starts the program. When GitHub is unavailable, the currently installed version starts.
+The updater checks `latest.json` on GitHub before every start. When a newer version exists, it downloads the ZIP, verifies SHA-256, preserves the local API key and user data, installs the update, and starts the program. When GitHub is unavailable, the currently installed version starts.
 
 ## Current interface
 
