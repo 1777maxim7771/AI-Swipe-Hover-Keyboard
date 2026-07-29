@@ -1,17 +1,26 @@
 # Changelog
 
+## 4.3.2 — 2026-07-29
+
+- Fixed startup failure `SyntaxError: unterminated string literal` in `vertical_predictive_letter_wheel.py` at line 1419.
+- Root cause: the legacy reconstructed package contained a damaged/truncated Python source file even though the package-level SHA matched the published legacy package.
+- Added a separate clean-source repair payload split into four verified Base64/GZip parts.
+- Installer now restores the complete Python source after package extraction.
+- The restored source is checked with its own SHA-256 value and then compiled with `python -m py_compile` before any program files are installed.
+- Updater now compares both application version and main-source SHA-256; it repairs a damaged installation even when version numbers appear current.
+- Added root `UPDATE_FROM_GITHUB.ps1` and `UPDATE_AND_START.bat` so installed copies always fetch the current repair logic.
+
 ## Package integrity fix — 2026-07-29 (evening)
 
 - The direct ZIP published for release 16 was corrupted (only ~15 KB, missing valid ZIP central directory).
 - This caused `Expand-Archive` / `.ctor` error: "Не удается найти конец записи центрального каталога".
 - Temporarily restored a working package by pointing `latest.json` to the known-good `package_parts` of release 15.
 - Installer already supports the multipart Base64 fallback path, so installation works again.
-- A clean direct ZIP for 4.3.1 will be republished later.
 
 ## SHA-256 correction — 2026-07-29
 
 - Corrected the `sha256` value in `latest.json` for release 16.
-- Previous hash did not match the actual content of the (later discovered corrupted) ZIP.
+- Previous hash did not match the actual content of the later-discovered corrupted ZIP.
 
 ## Installer hotfix — 2026-07-29
 
@@ -19,7 +28,6 @@
 - The BAT now downloads the newest PowerShell installer before checking the manifest.
 - The PowerShell installer accepts `download_url`, `package_url`, and legacy `package_parts`.
 - Added cache-busting, retry logic, expected/actual SHA-256 logging, configuration preservation, and rollback protection.
-- The application package remains version 4.3.1; this entry updates the installation mechanism.
 
 ## 4.3.1 — 2026-07-29
 
