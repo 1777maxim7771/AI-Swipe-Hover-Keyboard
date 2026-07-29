@@ -46,6 +46,22 @@ function Invoke-JsonWithRetry {
     throw $lastError
 }
 
+function Invoke-TextWithRetry {
+    param([string]$Url, [int]$Attempts = 3)
+    $lastError = $null
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        try {
+            $response = Invoke-WebRequest -UseBasicParsing -Uri (Add-CacheBuster $Url) -Headers @{"User-Agent"=$UserAgent; "Cache-Control"="no-cache"} -TimeoutSec 60
+            return [string]$response.Content
+        } catch {
+            $lastError = $_
+            Write-InstallLog ("Text download attempt {0}/{1} failed: {2}" -f $attempt, $Attempts, $_.Exception.Message)
+            if ($attempt -lt $Attempts) { Start-Sleep -Seconds $attempt }
+        }
+    }
+    throw $lastError
+}
+
 function Invoke-FileDownloadWithRetry {
     param([string]$Url, [string]$Destination, [int]$Attempts = 3)
     $lastError = $null
@@ -90,21 +106,101 @@ function Download-PackageFromManifest {
         $parts = @($partsProperty.Value)
         $builder = New-Object System.Text.StringBuilder
         for ($index = 0; $index -lt $parts.Count; $index++) {
-            $partUrl = [string]$parts[$index]
-            Write-InstallLog ("Downloading legacy package part {0}/{1}" -f ($index + 1), $parts.Count)
-            $response = Invoke-WebRequest -UseBasicParsing -Uri (Add-CacheBuster $partUrl) -Headers @{"User-Agent"=$UserAgent; "Cache-Control"="no-cache"} -TimeoutSec 60
-            [void]$builder.Append(([string]$response.Content -replace '\s', ''))
+            Write-InstallLog ("Downloading package part {0}/{1}" -f ($index + 1), $parts.Count)
+            [void]$builder.Append(((Invoke-TextWithRetry -Url ([string]$parts[$index])) -replace '\s', ''))
         }
         try {
             [System.IO.File]::WriteAllBytes($Destination, [Convert]::FromBase64String($builder.ToString()))
         } catch {
-            throw "Legacy package_parts could not be decoded as Base64: $($_.Exception.Message)"
+            throw "package_parts could not be decoded as Base64: $($_.Exception.Message)"
         }
         return
     }
 
     $keys = ($Manifest.PSObject.Properties.Name -join ", ")
     throw "latest.json has no supported package field. Expected download_url, package_url, or package_parts. Available fields: $keys"
+}
+
+function Find-PythonOnC {
+    $candidates = @(
+        "C:\Python314\python.exe", "C:\Python313\python.exe", "C:\Python312\python.exe", "C:\Python311\python.exe", "C:\Python310\python.exe",
+        "C:\Program Files\Python314\python.exe", "C:\Program Files\Python313\python.exe", "C:\Program Files\Python312\python.exe", "C:\Program Files\Python311\python.exe",
+        (Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\python.exe"),
+        (Join-Path $env:LOCALAPPDATA "Programs\Python\Python313\python.exe"),
+        (Join-Path $env:LOCALAPPDATA "Programs\Python\Python312\python.exe"),
+        (Join-Path $env:LOCALAPPDATA "Programs\Python\Python311\python.exe")
+    )
+    foreach ($candidate in $candidates) {
+        if (Test-Path -LiteralPath $candidate) { return $candidate }
+    }
+    return $null
+}
+
+function Apply-SourceRepairFromManifest {
+    param($Manifest, [string]$SourceRoot)
+    $partsProperty = $Manifest.PSObject.Properties["repair_source_parts"]
+    $shaProperty = $Manifest.PSObject.Properties["repair_source_sha256"]
+    if ($null -eq $partsProperty -or $null -eq $shaProperty -or @($partsProperty.Value).Count -eq 0) {
+        Write-InstallLog "No source repair payload is declared in latest.json."
+        return
+    }
+
+    Write-InstallLog "Applying verified clean-source repair before installation..."
+    $builder = New-Object System.Text.StringBuilder
+    $parts = @($partsProperty.Value)
+    for ($index = 0; $index -lt $parts.Count; $index++) {
+        Write-InstallLog ("Downloading clean source part {0}/{1}" -f ($index + 1), $parts.Count)
+        [void]$builder.Append(((Invoke-TextWithRetry -Url ([string]$parts[$index])) -replace '\s', ''))
+    }
+
+    $gzipBytes = [Convert]::FromBase64String($builder.ToString())
+    $input = New-Object System.IO.MemoryStream(,$gzipBytes)
+    $gzip = New-Object System.IO.Compression.GZipStream($input, [System.IO.Compression.CompressionMode]::Decompress)
+    $output = New-Object System.IO.MemoryStream
+    try {
+        $gzip.CopyTo($output)
+        $target = Join-Path $SourceRoot "PROGRAM_FILES\vertical_predictive_letter_wheel.py"
+        [System.IO.File]::WriteAllBytes($target, $output.ToArray())
+    } finally {
+        $gzip.Dispose(); $input.Dispose(); $output.Dispose()
+    }
+
+    $target = Join-Path $SourceRoot "PROGRAM_FILES\vertical_predictive_letter_wheel.py"
+    $actual = (Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant()
+    $expected = ([string]$shaProperty.Value).Trim().ToLowerInvariant()
+    Write-InstallLog ("Clean source expected SHA-256: {0}" -f $expected)
+    Write-InstallLog ("Clean source actual SHA-256:   {0}" -f $actual)
+    if ($actual -ne $expected) { throw "Clean source repair SHA-256 verification failed." }
+
+    $python = Find-PythonOnC
+    if (-not $python) { throw "Python не найден на диске C. Установите Python 3.11 или новее и повторите запуск." }
+    & $python -m py_compile $target
+    if ($LASTEXITCODE -ne 0) { throw "Repaired Python source failed py_compile validation." }
+    Write-InstallLog "Clean source repair passed py_compile."
+
+    $versionText = @"
+AI Swipe Hover Keyboard
+Version: $($Manifest.version)
+Release: $($Manifest.release)
+Date: 2026-07-29
+Topic: clean source recovery and syntax validation
+
+Changes:
+- Restored the complete vertical_predictive_letter_wheel.py from a verified repair payload.
+- Added mandatory SHA-256 and py_compile validation before installation.
+- Added manifest schema compatibility and rollback protection.
+"@
+    Set-Content -LiteralPath (Join-Path $SourceRoot "VERSION_INFO.txt") -Value $versionText -Encoding UTF8
+}
+
+function Install-LatestRuntimeFiles {
+    param([string]$DestinationRoot)
+    $updaterUrl = "https://raw.githubusercontent.com/$RepoOwner/$RepoName/$Branch/UPDATE_FROM_GITHUB.ps1"
+    $starterUrl = "https://raw.githubusercontent.com/$RepoOwner/$RepoName/$Branch/UPDATE_AND_START.bat"
+    $programDir = Join-Path $DestinationRoot "PROGRAM_FILES"
+    New-Item -ItemType Directory -Path $programDir -Force | Out-Null
+    Invoke-FileDownloadWithRetry -Url $updaterUrl -Destination (Join-Path $programDir "UPDATE_FROM_GITHUB.ps1")
+    Invoke-FileDownloadWithRetry -Url $starterUrl -Destination (Join-Path $DestinationRoot "UPDATE_AND_START.bat")
 }
 
 try {
@@ -118,14 +214,16 @@ try {
     Download-PackageFromManifest -Manifest $manifest -Destination $zipPath
     $actual = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
     $expected = ([string]$manifest.sha256).Trim().ToLowerInvariant()
-    Write-InstallLog ("Expected SHA-256: {0}" -f $expected)
-    Write-InstallLog ("Actual SHA-256:   {0}" -f $actual)
+    Write-InstallLog ("Expected package SHA-256: {0}" -f $expected)
+    Write-InstallLog ("Actual package SHA-256:   {0}" -f $actual)
     if ($actual -ne $expected) { throw "SHA-256 verification failed." }
 
     Expand-Archive -LiteralPath $zipPath -DestinationPath $extractDir -Force
     $source = Get-ChildItem -LiteralPath $extractDir -Directory | Select-Object -First 1
     if (-not $source) { throw "The package does not contain an application directory." }
     if (-not (Test-Path -LiteralPath (Join-Path $source.FullName "PROGRAM_FILES"))) { throw "The package does not contain PROGRAM_FILES." }
+
+    Apply-SourceRepairFromManifest -Manifest $manifest -SourceRoot $source.FullName
 
     if (Test-Path -LiteralPath $TargetDir) {
         Write-InstallLog "Creating rollback backup and preserving local configuration."
@@ -148,6 +246,7 @@ try {
         Copy-Item -LiteralPath $saved.FullName -Destination $target -Recurse -Force
     }
 
+    Install-LatestRuntimeFiles -DestinationRoot $TargetDir
     $installationChanged = $false
     Write-InstallLog ("Installed version {0} to {1}" -f $manifest.version, $TargetDir)
     $starter = Join-Path $TargetDir "UPDATE_AND_START.bat"
